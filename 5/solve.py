@@ -5,8 +5,9 @@ import intcode
 
 
 def main(input, value):
-    runner = intcode.   create_runner(input, int(value))
+    runner = intcode.create_runner(input, int(value))
     runner.run()
+    print(runner.output_value())
 
 
 if __name__ == '__main__':

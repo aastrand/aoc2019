@@ -1,4 +1,3 @@
-import copy
 import sys
 
 
@@ -8,17 +7,14 @@ class NotInitializedException(Exception):
 
 class IntCodeRunner:
 
-    _program = None
-    _pc = None
-    _input_value = None
-    _output_value = None
-    _opcode_table = {}
-
-    def __init__(self, program, input_value):
+    def __init__(self, program, input_values):
         self._program = program
-        self._input_value = input_value
+        self._input_values = input_values
+        self._input_seq = 0
+        self._output_value = None
         self._pc = 0
 
+        self._opcode_table = {}
         self._opcode_table[1] = self.add
         self._opcode_table[2] = self.mul
         self._opcode_table[3] = self.store
@@ -50,7 +46,6 @@ class IntCodeRunner:
         return 0
 
     def halt(self, *c):
-        print("halting, value at 0: %d" % self._program[0])
         return -1
 
     def error(self, *c):
@@ -59,12 +54,13 @@ class IntCodeRunner:
 
     def output(self, p1m, *c):
         self._output_value = self.load(self._pc+1, p1m)
-        print("output: %s" % self._output_value)
         self._pc += 2
         return 0
 
     def store(self, *c):
-        self._program[self._program[self._pc+1]] = self._input_value
+        self._program[self._program[self._pc+1]] = self._input_values[self._input_seq]
+        self._input_seq += 1
+        self._input_seq = min(self._input_seq, len(self._input_values)-1)
         self._pc += 2
         return 0
 
@@ -104,18 +100,21 @@ class IntCodeRunner:
 
     def output_value(self):
         if self._output_value is not None:
-            return copy.deepcopy(self._output_value)
+            return self._output_value
         else:
-            raise NotInitializedException("run() has not been called")
+            raise NotInitializedException("no output value written by program")
 
-    def run(self):
+    def run(self, pump_mode=False):
         while (True):
             opcode, p1m, p2m = decode_instruction(self._program[self._pc])
             instr = self._opcode_table.get(opcode, self.error)
             ret = instr(p1m, p2m)
 
+            if (opcode == 4 and pump_mode):
+                return opcode
+
             if (ret == -1):
-                break
+                return opcode
 
 
 def decode_instruction(opcode):
@@ -130,7 +129,7 @@ def decode_instruction(opcode):
     return digits[3], digits[1], digits[0]
 
 
-def create_runner(input_file, input_value):
+def create_runner(input_file, *input_values):
     program = []
     for l in open(input_file, 'r'):
         program.extend(l.strip().split(','))
@@ -139,4 +138,4 @@ def create_runner(input_file, input_value):
     for i, c in enumerate(program):
         program[i] = int(c)
 
-    return IntCodeRunner(program, input_value)
+    return IntCodeRunner(program, list(input_values))
