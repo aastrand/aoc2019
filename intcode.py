@@ -132,6 +132,9 @@ class IntCodeRunner:
         else:
             raise NotInitializedException("no output value written by program")
 
+    def set_input_values(self, *values):
+        self._input_values = [v for v in values]
+
     def run(self, pump_mode=False):
         while (True):
             opcode, params = decode_instruction(self._program[self._pc])
