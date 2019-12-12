@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from itertools import combinations
-from sympy import primefactors
+from math import gcd
 import copy
 import sys
 
@@ -20,7 +20,7 @@ def update_velocity(a, b, f, t):
         if a[0][axis] < b[0][axis]:
             a[1][axis] = a[1][axis] + 1
             b[1][axis] = b[1][axis] - 1
-        elif  a[0][axis] > b[0][axis]:
+        elif a[0][axis] > b[0][axis]:
             a[1][axis] = a[1][axis] - 1
             b[1][axis] = b[1][axis] + 1
 
@@ -88,6 +88,15 @@ def compute_lookup_table(bodies, axis):
     return lookup
 
 
+def lcm(x, y, z):
+    gcd2 = gcd(y, z)
+    gcd3 = gcd(x, gcd2)
+
+    lcm2 = y*z // gcd2
+    lcm3 = x*lcm2 // gcd(x, lcm2)
+    return lcm3
+
+
 def main(input, steps):
     bodies = parse(input)
     steps = int(steps)
@@ -107,27 +116,7 @@ def main(input, steps):
     y = compute_lookup_table(bodies, 1)
     z = compute_lookup_table(bodies, 2)
 
-    print(len(x), len(y), len(z))
-    factors = set()
-    for t in x, y, z:
-        for p in primefactors(len(t)):
-            factors.add(p)
-
-    step_delta = 1
-    for p in factors:
-        step_delta *= p
-
-    step = step_delta
-    while True:
-        xt = x[step % len(x)]
-        yt = y[step % len(y)]
-        zt = z[step % len(z)]
-
-        if xt == x[0] and yt == y[0] and zt == z[0]:
-            print(step)
-            break
-
-        step += step_delta
+    print(lcm(len(x), len(y), len(z)))
 
 
 if __name__ == '__main__':
