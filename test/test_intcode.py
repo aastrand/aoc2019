@@ -152,3 +152,12 @@ class IntCodeTest(unittest.TestCase):
         runner = create_runner("test/rel_jnz.txt")
         runner.run()
         self.assertEquals(31337, runner.output_value())
+
+    def test_reset_input_offet(self):
+        runner = create_runner("test/io2.txt", 1, 2)
+        runner.run()
+        out = runner.output_value()
+        runner.set_input_values(2, 1)
+        runner._pc = 0
+        runner.run(True)
+        self.assertEquals(2, runner.output_value())
