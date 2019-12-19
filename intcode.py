@@ -134,6 +134,7 @@ class IntCodeRunner:
 
     def set_input_values(self, *values):
         self._input_values = [v for v in values]
+        self._input_seq = 0
 
     def run(self, pump_mode=False):
         while (True):
