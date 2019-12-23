@@ -2,8 +2,6 @@
 
 import re
 import sys
-from functools import reduce
-from math import gcd
 
 
 def deal_reference(deck):
@@ -128,25 +126,58 @@ def track(ops, length, i):
     return i
 
 
-def part1(ops):
+def part1(input):
+    ops = parse(input)
     print(track(ops, 10007, 2019))
 
 
-def part2(ops):
-    i = 2020
+def deal_reverse(length, _, a, b):
+    return -a % length, (length - 1 - b) % length
+
+
+def inc_reverse(length, i, a, b):
+    return (a * i % length), (b * i % length)
+
+
+def cut_reverse(length, i, a, b):
+    return a, (b - i) % length
+
+
+OP_REGEX_REVERSE = {
+    '^deal with increment ([-0-9]+)$': inc_reverse,
+    '^deal into new stack$': deal_reverse,
+    '^cut ([-0-9]+)$': cut_reverse
+}
+
+
+def part2(input):
+    pos = 2020
     length = 119315717514047
     shuffles = 101741582076661
 
-    # ?
+    # "ends up in position 2020" => we need to reverse the shuffle
+    # treat a shuffle as a linear function: new_pos = a*pos + b
+    a, b = 1, 0
+    for l in open(input, 'r'):
+        for regex, f in OP_REGEX_REVERSE.items():
+            match = re.match(regex, l.strip())
+            if match:
+                i = match.groups()[0] if match.groups() else 0
+                a, b = f(length, int(i), a, b)
+                break
+
+    # now, to repeat a trillion times, we steal some math from reddit
+    # https://www.reddit.com/r/adventofcode/comments/ee0rqi/2019_day_22_solutions/fbtugcu?utm_source=share&utm_medium=web2x
+    r = (b * pow(1 - a, length - 2, length)) % length
+    print(((pos - r) * pow(a, shuffles * (length - 2), length) + r) % length)
 
 
 def main(input):
     test()
 
-    ops = parse(input)
+    part1(input)
 
-    part1(ops)
-    part2(ops)
+    part2(input)
 
 
 if __name__ == '__main__':
