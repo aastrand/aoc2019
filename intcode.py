@@ -14,6 +14,7 @@ class IntCodeRunner:
         self._output_value = None
         self._pc = 0
         self._rel_base = 0
+        self._breakpoint_opcodes = set()
 
         self._opcode_table = {}
         self._opcode_table[1] = self.add
@@ -136,13 +137,20 @@ class IntCodeRunner:
         self._input_values = [v for v in values]
         self._input_seq = 0
 
+    def add_breakpoint_opcode(self, opcode):
+        self._breakpoint_opcodes.add(opcode)
+
+    def remove_breakpoint_opcode(self, opcode):
+        self._breakpoint_opcodes.remove(opcode)
+
     def run(self, pump_mode=False):
         while (True):
             opcode, params = decode_instruction(self._program[self._pc])
             instr = self._opcode_table.get(opcode, self.error)
             ret = instr(params[0], params[1], params[2])
 
-            if ret == -1 or (opcode == 4 and pump_mode):
+            if ret == -1 or (opcode == 4 and pump_mode) or \
+                opcode in self._breakpoint_opcodes:
                 return opcode
 
 

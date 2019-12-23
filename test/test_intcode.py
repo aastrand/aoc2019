@@ -161,3 +161,17 @@ class IntCodeTest(unittest.TestCase):
         runner._pc = 0
         runner.run(True)
         self.assertEquals(2, runner.output_value())
+
+    def test_breakpoint_on_opcodes(self):
+        runner = create_runner("test/io.txt", 1)
+        ec = runner.run()
+        self.assertEquals(99, ec)
+
+        runner = create_runner("test/io.txt", 1)
+        runner.add_breakpoint_opcode(4)
+        runner.add_breakpoint_opcode(3)
+        ec = runner.run()
+        self.assertEquals(3, ec)
+        ec = runner.run()
+        self.assertEquals(4, ec)
+        self.assertEquals(1, runner.output_value())
